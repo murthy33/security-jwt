@@ -24,6 +24,7 @@ public class UserService
 		User savedUser = new User();
 		savedUser.setUsername(user.getUsername());
 		savedUser.setPassword(passwordEncoder.encode(user.getPassword()));
+		savedUser.setRole(user.getRole());
 		repo.save(savedUser);
 		return savedUser;
 	}
@@ -33,11 +34,12 @@ public class UserService
 	    User db_user = repo.findByUsername(user.getUsername())
 	            .orElseThrow(() -> new RuntimeException("User not found"));
 
-	    if (!passwordEncoder.matches(user.getPassword(), db_user.getPassword())) {
+	    if (!passwordEncoder.matches(user.getPassword(), db_user.getPassword())) 
+	    {
 	        throw new RuntimeException("Invalid credentials please check");
 	    }
 
-	    return jwtService.generateToken(user.getUsername());
+	    return jwtService.generateToken(db_user);
 	}
 
 	public List<User> getAll() 

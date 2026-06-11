@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 public class SecurityConfig 
 {
@@ -27,9 +29,20 @@ public class SecurityConfig
 						.requestMatchers(
 								"/users/register",
 								"/users/login"
-								).permitAll()
-								.anyRequest().authenticated()
-								)
+						).permitAll()
+						
+						.requestMatchers("/users/getAllUsers")
+						.hasAuthority("ADMIN")
+						
+						.anyRequest().authenticated()
+				)
+				.exceptionHandling(ex -> ex
+	                    .accessDeniedHandler((request, response, exception) -> {
+	                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+	                        response.getWriter()
+	                                .write("You don't have access to this resource");
+	                    })
+	            )
 				.addFilterBefore(jwtFilter,
                         UsernamePasswordAuthenticationFilter.class)
 				.build();

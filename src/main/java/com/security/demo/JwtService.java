@@ -20,16 +20,18 @@ public class JwtService
 			Keys.hmacShaKeyFor(
 					"abcdefghijklmnopqrstuvwxyz12345678901234567890".getBytes()
 					);
-	public String generateToken(String username)
+	
+	public String generateToken(User user)
 	{
 		Map<String, Object> claims = new HashMap<>();
-		return createToken(claims, username);
+		claims.put("role", user.getRole());
+		return createToken(claims, user);
 	}
 
-	private String createToken(Map<String, Object> claims, String username) 
+	private String createToken(Map<String, Object> claims, User user) 
 	{
 		 return Jwts.builder()
-				 .subject(username)
+				 .subject(user.getUsername())
 				 .claims(claims)
 				 .issuedAt(new Date(System.currentTimeMillis()))
 				 .expiration(new Date(System.currentTimeMillis() + 1000*60*60))
@@ -44,6 +46,16 @@ public class JwtService
 	            .parseSignedClaims(token)
 	            .getPayload()
 	            .getSubject();
+	}
+	
+	public String extractRole(String token)
+	{
+		return Jwts.parser()
+				.verifyWith(key)
+				.build()
+				.parseSignedClaims(token)
+				.getPayload()
+				.get("role", String.class);
 	}
 
 	public boolean validateToken(String token, UserDetails userDetails) {
